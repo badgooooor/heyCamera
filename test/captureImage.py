@@ -3,8 +3,6 @@ import os
 import signal
 import time
 
-# Config
-processTime = 20.0
 
 def capture():
     os.chdir("C:\Program Files (x86)\Java\jdk1.8.0_74\\bin")
