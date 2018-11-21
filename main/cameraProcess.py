@@ -1,4 +1,5 @@
 # Technically combination of captureImage and imageProcessing
+# Also interface for connect with PC2's Arduino that communicate /w PC1's Arduino
 # a complete flow of capture / image processing / send to serial command.
 # -by borBier(11/18/2018)
 
@@ -67,14 +68,14 @@ def imageCrop(img):
 
     return [upperRight, upperLeft, lowerLeft, lowerRight]
 
+#
+#  Format : XXXX1XXXX2XXXX3XXXX4
+#  20 output >> 5 out/quadrant >> 4 out for sub-quadrant + 1 for overall
 def imgProcess():
     img = cv2.imread(target, 0)
-
     ret, binaryImg = cv2.threshold(img, threshold, 256, cv2.THRESH_BINARY)
     splited = imageCrop(binaryImg)
-
     result = ""
-    # Get occurance in binary image.
     for i in range(4):
         part = splited[i]
         quadrant = imageCrop(part)
