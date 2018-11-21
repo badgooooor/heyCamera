@@ -17,7 +17,7 @@ import cv2
 # Configuration.
 sendingTime = 2.0
 
-captureTime = 28.0
+captureTime = 30.0
 imageDirectory = "C:/out/"          # Please use "/" format
 imageDirectory = "D:/Project/datacomm-assignment/image-processing/"
 imageFile = "img-1.bmp"
@@ -57,37 +57,30 @@ def quadrantProcess(img):
         keys = list(occurance.keys())
         return ("0" if keys[0] == 0 else "1")
 
+def imageCrop(img):
+    (h, w) = img.shape[:2]
+
+    upperLeft = img[0:int(h/2) , 0:int(w/2)]
+    upperRight = img[0:int(h/2), int(w/2):w]
+    lowerLeft = img[int(h/2):h, 0:int(w/2)]
+    lowerRight = img[int(h/2):h, int(w/2):w]
+
+    return [upperRight, upperLeft, lowerLeft, lowerRight]
+
 def imgProcess():
     img = cv2.imread(target, 0)
 
-    (h, w) = img.shape[:2]
-
-    # Convert to binary image.
     ret, binaryImg = cv2.threshold(img, threshold, 256, cv2.THRESH_BINARY)
+    splited = imageCrop(binaryImg)
 
-    # Crop the image to 4 parts.
-    upperLeft = binaryImg[0:int(h/2) , 0:int(w/2)]
-    upperRight = binaryImg[0:int(h/2), int(w/2):w]
-    lowerLeft = binaryImg[int(h/2):h, 0:int(w/2)]
-    lowerRight = binaryImg[int(h/2):h, int(w/2):w]
-
-    splited = [upperRight, upperLeft, lowerLeft, lowerRight]
     result = ""
     # Get occurance in binary image.
     for i in range(4):
         part = splited[i]
-        (qh, qw) = part.shape[:2]
-
-        ul  = part[0:int(qh/2) , 0:int(qw/2)]
-        ur = part[0:int(qh/2), int(qw/2):qw]
-        ll  = part[int(qh/2):qh, 0:int(qw/2)]
-        lr = part[int(qh/2):qh, int(qw/2):qw]
-
-        quadrant = [ur, ul, ll, lr]
+        quadrant = imageCrop(part)
         for i in range(4):
             result = result + quadrantProcess(quadrant[i])
-        
-        result = result + quadrantProcess(part) + " "
+        result = result + quadrantProcess(part)
     return result
 
 # ===== Send result to serial ======       
