@@ -48,13 +48,24 @@ def capture():
     time.sleep(captureTime)
     os.kill(capture, signal.SIGTERM)
 
+def quadrantProcess(img):
+    unique, counts = numpy.unique(img, return_counts=True)
+    occurance = dict(zip(unique, counts))
+    try:
+        return ("0" if occurance[0] > occurance[255] else "1")
+    except KeyError:
+        keys = list(occurance.keys())
+        return ("0" if keys[0] == 0 else "1")
+
 def imgProcess():
     img = cv2.imread(target, 0)
 
     (h, w) = img.shape[:2]
 
+    # Convert to binary image.
     ret, binaryImg = cv2.threshold(img, threshold, 256, cv2.THRESH_BINARY)
 
+    # Crop the image to 4 parts.
     upperLeft = binaryImg[0:int(h/2) , 0:int(w/2)]
     upperRight = binaryImg[0:int(h/2), int(w/2):w]
     lowerLeft = binaryImg[int(h/2):h, 0:int(w/2)]
@@ -62,17 +73,21 @@ def imgProcess():
 
     splited = [upperRight, upperLeft, lowerLeft, lowerRight]
     result = ""
-
-    print("! Processing the image . . . ")
+    # Get occurance in binary image.
     for i in range(4):
-        unique, counts = numpy.unique(splited[i], return_counts=True)
-        occurance = dict(zip(unique, counts))
-        print('Part ',i+1,' : ', occurance)
-        try:
-            result = result + ("0" if occurance[0] > occurance[255] else "1")
-        except KeyError:
-            keys = list(occurance.keys())
-            result = result + ("0" if keys[0] == 0 else "1")
+        part = splited[i]
+        (qh, qw) = part.shape[:2]
+
+        ul  = part[0:int(qh/2) , 0:int(qw/2)]
+        ur = part[0:int(qh/2), int(qw/2):qw]
+        ll  = part[int(qh/2):qh, 0:int(qw/2)]
+        lr = part[int(qh/2):qh, int(qw/2):qw]
+
+        quadrant = [ur, ul, ll, lr]
+        for i in range(4):
+            result = result + quadrantProcess(quadrant[i])
+        
+        result = result + quadrantProcess(part) + " "
     return result
 
 # ===== Send result to serial ======       
